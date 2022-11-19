@@ -5,22 +5,50 @@ from debuggingbook.Tracer import Tracer
 
 from exercise_2 import *
 
+
 def param_names(func: Callable):
     return inspect.getfullargspec(func).args
 
 
 class RecursiveTracer(Tracer):
-    
-    def __init__(self, func: Callable, file: TextIO = sys.stdout) -> None:
-        raise NotImplementedError() # remove this once your implementation is done
 
+    def __init__(self, func: Callable, file: TextIO = sys.stdout) -> None:
+        self.func: Callable = func
+        super().__init__(file=file)
+
+        pass
+
+    def traceit(self, frame, event, arg, indent=[0]):
+        # print(event, "Line no.", frame.f_lineno, frame.f_code.co_name, frame.f_locals)
+        if event == "call":
+            if 'n' in frame.f_locals:
+                value_of_n = frame.f_locals['n']
+                print(" " * indent[0] + 'call with', param_names(fib), "=", repr(value_of_n))
+            indent[0] += 2
+        elif event == "return":
+            if indent[0] == 2:
+                indent[0] = 0
+                print(" " * (indent[0] - 1) + "return", arg)
+            else:
+                indent[0] -= 2
+                print(" " * (indent[0] - 1), "return", arg)
+        return self
+
+
+# with RecursiveTracer(func=fib):
+#         fib(4)
+# def fib_traced(self,n: int) -> int:
+#     sys.settrace(self.traceit)
+#     ret = fib(n)
+#     sys.settrace(None)
+#     return ret
 
 ######## Tests ########
 
 if __name__ == '__main__':
     with RecursiveTracer(func=fib):
         fib(4)
-    
+
     # the following is the expected log output:
     expected = """
 call with n = 4
