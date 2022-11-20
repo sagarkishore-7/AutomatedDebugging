@@ -1,5 +1,26 @@
+from functools import wraps
 level = 0
 
+def trace(func):
+    func_name = func.__name__
+    seperator = " "
+
+    @wraps(func)
+    def traced_func(*args, **kwargs):
+        if func_name == fib.__name__:
+            print(f'{seperator * level}call with n = {"".join(map(str,args))}')
+        else:
+            ar = args[0]
+            l = args[1]
+            r = args[2]
+            print(f'{seperator * level}call with arr = {ar}, l = {l}, r = {r}')
+        increase_level()
+        result = func(*args, **kwargs)
+        decrease_level()
+        print(f'{seperator * (level +1)}return {result}')
+
+        return result
+    return traced_func
 def increase_level():
     global level
     level += 1
@@ -20,7 +41,8 @@ def fib(n: int) -> int:
         return 0
     if n == 1:
         return 1
-    return fib(n - 1) + fib(n - 2)
+    else:
+        return fib(n - 1) + fib(n - 2)
 
 
 # https://www.geeksforgeeks.org/python-program-for-merge-sort/
@@ -74,7 +96,9 @@ def merge_sort(arr, l, r): # main function
 
 
 if __name__ == '__main__':
+    fib = trace(fib)
     fib(4)
     log()
     arr = [12, 11, 13, 5, 6, 7]
+    merge_sort = trace(merge_sort)
     merge_sort(arr, 0, len(arr) - 1)

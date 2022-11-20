@@ -2,6 +2,7 @@ import inspect
 import sys
 from typing import Callable, TextIO
 from debuggingbook.Tracer import Tracer
+from types import FrameType, TracebackType
 
 from exercise_2 import *
 
@@ -11,27 +12,23 @@ def param_names(func: Callable):
 
 
 class RecursiveTracer(Tracer):
-
     def __init__(self, func: Callable, file: TextIO = sys.stdout) -> None:
         self.func: Callable = func
         super().__init__(file=file)
-
-        pass
-
-    def traceit(self, frame, event, arg, indent=[0]):
-        # print(event, "Line no.", frame.f_lineno, frame.f_code.co_name, frame.f_locals)
+    def traceit(self, event, frame, arg):
+        #func_name = func.__name__
+        seperator =''
+        depth = 0
         if event == "call":
-            if 'n' in frame.f_locals:
-                value_of_n = frame.f_locals['n']
-                print(" " * indent[0] + 'call with', param_names(fib), "=", repr(value_of_n))
-            indent[0] += 2
+            depth += 2
+            if fib.__name__:
+                if 'n' in frame.f_locals:
+                    value_of_n = frame.f_locals['n']
+                    print( seperator * depth + 'call with', param_names(fib), "=", repr(value_of_n))
+            elif merge_sort.__name__:
+                print( seperator * depth + 'call with', param_names(merge_sort), "=", repr(frame.f_locals))
         elif event == "return":
-            if indent[0] == 2:
-                indent[0] = 0
-                print(" " * (indent[0] - 1) + "return", arg)
-            else:
-                indent[0] -= 2
-                print(" " * (indent[0] - 1), "return", arg)
+            print( seperator * depth + "return" + arg)
         return self
 
 
