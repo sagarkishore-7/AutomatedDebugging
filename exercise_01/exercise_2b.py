@@ -1,4 +1,4 @@
-from functools import wraps
+#from functools import wraps
 level = 0
 result = 0
 seperator = " "
@@ -112,13 +112,11 @@ def merge_sort(arr, l, r): # main function
         res1 = merge_sort(arr, l, m)       # <--- trace this
         decrease_level()
         decrease_level()
-        log(f"{seperator*level}return {res1}")
         increase_level()
         increase_level()
         res2 = merge_sort(arr, m + 1, r)   # <--- trace this
         decrease_level()
         decrease_level()
-        log(f"{seperator*level}return {res2}")
 
         merge(arr, l, m, r)         # <--- do not trace this!
 
