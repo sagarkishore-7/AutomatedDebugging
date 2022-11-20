@@ -26,6 +26,8 @@ def trace(func):
 
         return result
     return traced_func
+
+
 def increase_level():
     global level
     level += 1
