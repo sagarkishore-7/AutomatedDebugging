@@ -2,7 +2,6 @@ import inspect
 import sys
 from typing import Callable, TextIO
 from debuggingbook.Tracer import Tracer
-from types import FrameType, TracebackType
 
 from exercise_2 import *
 
@@ -12,23 +11,35 @@ def param_names(func: Callable):
 
 
 class RecursiveTracer(Tracer):
+
     def __init__(self, func: Callable, file: TextIO = sys.stdout) -> None:
+        global func_name
         self.func: Callable = func
         super().__init__(file=file)
-    def traceit(self, event, frame, arg):
-        #func_name = func.__name__
-        seperator =''
-        depth = 0
+        func_name = func.__name__
+        pass
+
+    def traceit(self, frame, event, arg, depth=[0]):
+
         if event == "call":
-            depth += 2
-            if fib.__name__:
-                if 'n' in frame.f_locals:
-                    value_of_n = frame.f_locals['n']
-                    print( seperator * depth + 'call with', param_names(fib), "=", repr(value_of_n))
-            elif merge_sort.__name__:
-                print( seperator * depth + 'call with', param_names(merge_sort), "=", repr(frame.f_locals))
+            if func_name == fib.__name__:
+                n = param_names(fib)
+                print(f'{" " * depth[0]}call with {n[0]} = {repr(frame.f_locals.get("n"))}')
+                depth[0] += 2
+            elif func_name == merge_sort.__name__:
+                if frame.f_code.co_name != 'merge':
+                    arguments = param_names(merge_sort)
+                    print(f'{" " * depth[0]}call with {arguments[0]} = {repr(frame.f_locals.get("arr"))}, {arguments[1]} = {repr(frame.f_locals.get("l"))}, {arguments[2]} = {repr(frame.f_locals.get("r"))}')
+                    depth[0] += 2
         elif event == "return":
-            print( seperator * depth + "return" + arg)
+            if frame.f_code.co_name != 'merge':
+
+                if depth[0] == 2:
+                    depth[0] = 0
+                    print(f'{" " * (depth[0] - 1)}return {arg}')
+                else:
+                    depth[0] -= 2
+                    print(f'{" " * (depth[0] - 1)} return {arg}')
         return self
 
 
