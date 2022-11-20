@@ -6,7 +6,6 @@ def trace(func):
     seperator = " "
 
     @wraps(func)
-    #removed **kwargs (not required)
     def traced_func(*args):
         if func_name == fib.__name__:
             n = args[0]
