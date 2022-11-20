@@ -6,9 +6,11 @@ def trace(func):
     seperator = " "
 
     @wraps(func)
+    #removed **kwargs (not required)
     def traced_func(*args):
         if func_name == fib.__name__:
-            print(f'{seperator * level}call with n = {"".join(map(str,args))}')
+            n = args[0]
+            print(f'{seperator * level}call with n = {n}')
         else:
             ar = args[0]
             l = args[1]
