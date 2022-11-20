@@ -16,9 +16,11 @@ def trace(func):
             r = args[2]
             print(f'{seperator * level}call with arr = {ar}, l = {l}, r = {r}')
         increase_level()
+        increase_level()
         result = func(*args)
         decrease_level()
-        print(f'{seperator * (level +1)}return {result}')
+        decrease_level()
+        print(f'{seperator * level}return {result}')
 
         return result
     return traced_func
