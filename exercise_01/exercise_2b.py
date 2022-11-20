@@ -6,7 +6,7 @@ def trace(func):
     seperator = " "
 
     @wraps(func)
-    def traced_func(*args, **kwargs):
+    def traced_func(*args):
         if func_name == fib.__name__:
             print(f'{seperator * level}call with n = {"".join(map(str,args))}')
         else:
@@ -15,7 +15,7 @@ def trace(func):
             r = args[2]
             print(f'{seperator * level}call with arr = {ar}, l = {l}, r = {r}')
         increase_level()
-        result = func(*args, **kwargs)
+        result = func(*args)
         decrease_level()
         print(f'{seperator * (level +1)}return {result}')
 
