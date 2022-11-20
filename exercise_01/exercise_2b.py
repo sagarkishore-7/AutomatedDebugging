@@ -8,6 +8,7 @@ def trace(func):
     @wraps(func)
     def traced_func(*args):
         if func_name == fib.__name__:
+            #print(args)
             n = args[0]
             print(f'{seperator * level}call with n = {n}')
         else:
@@ -15,6 +16,7 @@ def trace(func):
             l = args[1]
             r = args[2]
             print(f'{seperator * level}call with arr = {ar}, l = {l}, r = {r}')
+        #implemented for 2 whitespace
         increase_level()
         increase_level()
         result = func(*args)
