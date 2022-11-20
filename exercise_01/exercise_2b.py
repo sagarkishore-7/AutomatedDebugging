@@ -1,7 +1,9 @@
 from functools import wraps
 level = 0
+result = 0
+seperator = " "
 
-def trace(func):
+'''def trace(func):
     func_name = func.__name__
     seperator = " "
 
@@ -25,7 +27,7 @@ def trace(func):
         print(f'{seperator * level}return {result}')
 
         return result
-    return traced_func
+    return traced_func'''
 
 
 def increase_level():
@@ -44,12 +46,21 @@ def log(s: str = ''):
     
 # TODO: change this function
 def fib(n: int) -> int:
+    log(f"{seperator*level}call with n = {n}")
     if n == 0:
+        log(f"{seperator*level}return 0")
         return 0
     if n == 1:
+        log(f"{seperator*level}return 1")
         return 1
     else:
-        return fib(n - 1) + fib(n - 2)
+        increase_level()
+        increase_level()
+        result = fib(n-1) + fib(n-2)
+        decrease_level()
+        decrease_level()
+        log(f"{seperator*level}return {result}")
+        return result
 
 
 # https://www.geeksforgeeks.org/python-program-for-merge-sort/
@@ -92,20 +103,33 @@ def merge(arr, l, m, r): # auxiliary function, do not trace
 
 # TODO: change this function
 def merge_sort(arr, l, r): # main function
+    log(f"{seperator*level}call with arr = {arr}, l = {l}, r = {r}")
     if l < r:
         m = l + (r - l) // 2
 
-        merge_sort(arr, l, m)       # <--- trace this
-        merge_sort(arr, m + 1, r)   # <--- trace this
+        increase_level()
+        increase_level()
+        res1 = merge_sort(arr, l, m)       # <--- trace this
+        decrease_level()
+        decrease_level()
+        log(f"{seperator*level}return {res1}")
+        increase_level()
+        increase_level()
+        res2 = merge_sort(arr, m + 1, r)   # <--- trace this
+        decrease_level()
+        decrease_level()
+        log(f"{seperator*level}return {res2}")
+
         merge(arr, l, m, r)         # <--- do not trace this!
 
+    log(f"{seperator*level}return {arr}")
     return arr
 
 
 if __name__ == '__main__':
-    fib = trace(fib)
+    #fib = trace(fib)
     fib(4)
     log()
     arr = [12, 11, 13, 5, 6, 7]
-    merge_sort = trace(merge_sort)
+    #merge_sort = trace(merge_sort)
     merge_sort(arr, 0, len(arr) - 1)
