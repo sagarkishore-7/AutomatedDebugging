@@ -93,6 +93,11 @@ class Debugger(Debugger):
         s = CallInfo(self.frame.f_code, self.frame.f_lineno)
         self.log(s)
 
+    def next_command(self):
+        """Prints the next line ready for execution"""
+
+
+
 
 
     pass
