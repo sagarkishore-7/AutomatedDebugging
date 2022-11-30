@@ -28,7 +28,7 @@ class Debugger(Debugger):
         self.stepping: bool = True
         self.breakpoints: Set[int] = set()
         self.interact: bool = True
-        self.next: bool = False
+        self.finish: bool = False
 
         self.frame: FrameType
         self.event: Optional[str] = None
@@ -40,7 +40,13 @@ class Debugger(Debugger):
 
     def stop_here(self) -> bool:
         """Return True if we should stop"""
-        return self.stepping or self.frame.f_lineno in self.breakpoints or self.next
+
+        if self.finish == True:
+            if self.event == "return":
+                self.stepping = True
+            else:
+                self.stepping = False
+        return self.stepping or self.frame.f_lineno in self.breakpoints
 
 
     def break_command(self, arg: str = "") -> None:
@@ -111,7 +117,7 @@ class Debugger(Debugger):
         except Exception as err:
             self.log(f"{err.__class__.__name__}: {err}")
 
-    def where_command(self, arg):
+    def where_command(self, arg: str) -> None:
         """Prints Traceback (most recent call last)"""
 
         frames = inspect.stack()
@@ -123,17 +129,10 @@ class Debugger(Debugger):
                 self.log(z)
             frame += 1
 
-    def next_command(self, arg: str = "") -> None:
+    def finish_command(self, arg: str) -> None:
         """Execute up to the next line skipping functions if any"""
 
-        while(self.event):
-            if self.event=="call":
-                self.execute("continue")
-                self.stop_here()
-            elif self.event==None:
-                self.execute("step")
-            elif self.event=="return":
-                self.next = True
+        self.finish = True
 
 
 
