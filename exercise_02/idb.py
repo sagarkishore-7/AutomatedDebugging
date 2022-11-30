@@ -1,3 +1,4 @@
+import inspect
 import traceback
 from inspect import getsourcelines
 import sys
@@ -113,23 +114,26 @@ class Debugger(Debugger):
     def where_command(self, arg):
         """Prints Traceback (most recent call last)"""
 
-        caller = self.frame.f_back
+        frames = inspect.stack()
         self.log("Traceback (most recent call last):")
-        if self.frame.f_lineno != caller.f_lineno and self.frame.f_code.co_filename == caller.f_code.co_filename:
-            z = CallInfo(caller.f_code, caller.f_lineno)
-            self.log(z)
-        s = CallInfo(self.frame.f_code, self.frame.f_lineno)
-        self.log(s)
+        for frame in range(len(frames)):
+            x = frames[frame]
+            if x.frame.f_code.co_filename == self.frame.f_code.co_filename:
+                z = CallInfo(x.frame.f_code, x.frame.f_lineno)
+                self.log(z)
+            frame += 1
 
     def next_command(self, arg: str = "") -> None:
         """Execute up to the next line skipping functions if any"""
 
-        if self.event=="call":
-                self.continue_command()
-        elif self.event==None:
-            self.step_command()
-        elif self.event=="return":
-            self.next = True
+        while(self.event):
+            if self.event=="call":
+                self.execute("continue")
+                self.stop_here()
+            elif self.event==None:
+                self.execute("step")
+            elif self.event=="return":
+                self.next = True
 
 
 
