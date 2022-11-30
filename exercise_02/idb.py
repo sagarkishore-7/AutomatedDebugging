@@ -59,6 +59,7 @@ class Debugger(Debugger):
                 self.stepping = True
             else:
                 self.stepping = False
+
         return self.stepping or self.frame.f_lineno in self.breakpoints
 
     def step_command(self, arg: str = "") -> None:
