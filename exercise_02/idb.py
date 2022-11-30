@@ -1,5 +1,4 @@
 import inspect
-import traceback
 from inspect import getsourcelines
 import sys
 from types import CodeType, FrameType
@@ -21,6 +20,7 @@ class CallInfo:
         code = lines[self.loc - start].strip()
         return f'{head}\n  {code}'
 
+
 class Debugger(Debugger):
 
     def __init__(self, *, file: TextIO = sys.stdout) -> None:
@@ -30,6 +30,7 @@ class Debugger(Debugger):
         self.interact: bool = True
         self.finish: bool = False
         self.next: bool = False
+        self.depth: int = 0
 
         self.frame: FrameType
         self.event: Optional[str] = None
@@ -42,27 +43,46 @@ class Debugger(Debugger):
     def stop_here(self) -> bool:
         """Return True if we should stop"""
 
-        if self.next == True:
-            if self.event:
-                self.finish = True
-            else:
+        if self.next:
+            if self.event == "call":
+                self.depth += 1
+            elif self.event == "return":
+                self.depth -= 1
+            if (self.event == "line" or self.event == "return") and self.depth == 0:
                 self.stepping = True
+            else:
+                self.stepping = False
 
 
-        if self.finish == True:
+        if self.finish:
             if self.event == "return":
                 self.stepping = True
             else:
                 self.stepping = False
         return self.stepping or self.frame.f_lineno in self.breakpoints
 
+    def step_command(self, arg: str = "") -> None:
+        """Execute up to the next line"""
+
+        self.stepping = True
+        self.interact = False
+        self.next = False
+        self.finish = False
+
+    def continue_command(self, arg: str = "") -> None:
+        """Resume execution"""
+
+        self.stepping = False
+        self.interact = False
+        self.next = False
+        self.finish = False
 
     def break_command(self, arg: str = "") -> None:
         """Set a breakoint in given line. If no line is given, list all breakpoints"""
 
         source_lines, line_number = getsourcelines(self.frame.f_code)
         start = line_number
-        end = start + len(source_lines)-1
+        end = start + len(source_lines) - 1
         if arg:
             try:
                 l_no = int(arg)
@@ -126,6 +146,7 @@ class Debugger(Debugger):
         """Prints Traceback (most recent call last)"""
 
         frames = inspect.stack()
+        frames.reverse()
         self.log("Traceback (most recent call last):")
         for frame in range(len(frames)):
             x = frames[frame]
@@ -138,27 +159,27 @@ class Debugger(Debugger):
         """Executes the function without stepping in"""
 
         self.next = True
-
+        self.interact = False
+        self.stepping = False
+        self.finish = False
 
     def finish_command(self, arg: str) -> None:
         """Executes a function until it returns"""
 
         self.finish = True
-
-
-
-
-
-
+        self.interact = False
+        self.next = False
+        self.stepping = False
 
     pass
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("No input file", file=sys.stderr)
         exit(1)
 
-    module_name = sys.argv[1][:-3] # remove .py
+    module_name = sys.argv[1][:-3]  # remove .py
     exec(f"from {module_name} import debug_main")
 
     with Debugger():
