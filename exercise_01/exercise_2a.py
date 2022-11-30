@@ -24,22 +24,22 @@ class RecursiveTracer(Tracer):
         if event == "call":
             if func_name == fib.__name__:
                 n = param_names(fib)
-                print(f'{" " * depth[0]}call with {n[0]} = {repr(frame.f_locals.get("n"))}')
+                self.log(f'{" " * depth[0]}call with {n[0]} = {repr(frame.f_locals.get("n"))}')
                 depth[0] += 2
             elif func_name == merge_sort.__name__:
                 if frame.f_code.co_name != 'merge':
                     arguments = param_names(merge_sort)
-                    print(f'{" " * depth[0]}call with {arguments[0]} = {repr(frame.f_locals.get("arr"))}, {arguments[1]} = {repr(frame.f_locals.get("l"))}, {arguments[2]} = {repr(frame.f_locals.get("r"))}')
+                    self.log(f'{" " * depth[0]}call with {arguments[0]} = {repr(frame.f_locals.get("arr"))}, {arguments[1]} = {repr(frame.f_locals.get("l"))}, {arguments[2]} = {repr(frame.f_locals.get("r"))}')
                     depth[0] += 2
         elif event == "return":
             if frame.f_code.co_name != 'merge':
 
                 if depth[0] == 2:
                     depth[0] = 0
-                    print(f'{" " * (depth[0] - 1)}return {arg}')
+                    self.log(f'{" " * (depth[0] - 1)}return {arg}')
                 else:
                     depth[0] -= 2
-                    print(f'{" " * (depth[0] - 1)} return {arg}')
+                    self.log(f'{" " * (depth[0] - 1)} return {arg}')
         return self
 
 

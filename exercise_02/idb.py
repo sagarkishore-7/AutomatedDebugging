@@ -1,8 +1,13 @@
 import traceback
 from inspect import getsourcelines
 import sys
-from types import CodeType
+from types import CodeType, FrameType
+from typing import TextIO, Set, Optional, Any, Dict
+
 from debuggingbook.Debugger import Debugger
+
+from exercise_02.test import debug_main
+
 
 class CallInfo:
     def __init__(self, caller: CodeType, line_no: int) -> None:
@@ -16,25 +21,46 @@ class CallInfo:
         return f'{head}\n  {code}'
 
 class Debugger(Debugger):
+
+    def __init__(self, *, file: TextIO = sys.stdout) -> None:
+        """Create a new interactive debugger."""
+        self.stepping: bool = True
+        self.breakpoints: Set[int] = set()
+        self.interact: bool = True
+        self.next: bool = False
+
+        self.frame: FrameType
+        self.event: Optional[str] = None
+        self.arg: Any = None
+
+        self.local_vars: Dict[str, Any] = {}
+
+        super().__init__(file=file)
+
+    def stop_here(self) -> bool:
+        """Return True if we should stop"""
+        return self.stepping or self.frame.f_lineno in self.breakpoints or self.next
+
+
     def break_command(self, arg: str = "") -> None:
         """Set a breakoint in given line. If no line is given, list all breakpoints"""
 
-        lines = []
         source_lines, line_number = getsourcelines(self.frame.f_code)
-        line_no = line_number
+        start = line_number
+        end = start + len(source_lines)-1
         if arg:
             try:
                 l_no = int(arg)
-                for line in source_lines:
+                """for line in source_lines:
                     lines.append(line_no)
-                    line_no += 1
-                if int(arg) in lines:
+                    line_no += 1"""
+                if int(arg) < start or int(arg) > end:
+                    raise IndexError
+                else:
                     self.breakpoints.add(int(arg))
                     self.log("Breakpoints:", self.breakpoints)
-                else:
-                    raise IndexError
             except IndexError:
-                self.log(f"line number {int(arg)} out of bound ({lines[0]} - {lines[-1]})")
+                self.log(f"line number {int(arg)} out of bound ({start} - {end})")
             except ValueError:
                 self.log(f"Expect a line number, but found '{arg}'")
         else:
@@ -59,6 +85,7 @@ class Debugger(Debugger):
     def assign_command(self, arg: str) -> None:
         """Use as 'assign VAR=VALUE'. Assign VALUE to local variable VAR."""
 
+        self.local_vars = self.frame.f_locals
         sep = arg.find('=')
         if sep > 0:
             try:
@@ -67,11 +94,12 @@ class Debugger(Debugger):
                 if not var.isidentifier():
                     raise SyntaxError
                 elif var not in self.local_vars:
-                    self.log(f"Warning: A new variable {var} is created")
+                    self.log(f"Warning: A new variable '{var}' is created")
+                    self.local_vars[var] = expr
                 else:
-                    pass
+                    self.local_vars[var] = expr
             except SyntaxError:
-                self.log(f"SyntaxError: {var} is not an identifier")
+                self.log(f"SyntaxError: '{var}' is not an identifier")
         else:
             self.help_command("assign")
             return
@@ -93,8 +121,17 @@ class Debugger(Debugger):
         s = CallInfo(self.frame.f_code, self.frame.f_lineno)
         self.log(s)
 
-    def next_command(self):
-        """Prints the next line ready for execution"""
+    def next_command(self, arg: str = "") -> None:
+        """Execute up to the next line skipping functions if any"""
+
+        if self.event=="call":
+                self.continue_command()
+        elif self.event==None:
+            self.step_command()
+        elif self.event=="return":
+            self.next = True
+
+
 
 
 
