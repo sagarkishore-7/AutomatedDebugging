@@ -29,6 +29,7 @@ class Debugger(Debugger):
         self.breakpoints: Set[int] = set()
         self.interact: bool = True
         self.finish: bool = False
+        self.next: bool = False
 
         self.frame: FrameType
         self.event: Optional[str] = None
@@ -40,6 +41,13 @@ class Debugger(Debugger):
 
     def stop_here(self) -> bool:
         """Return True if we should stop"""
+
+        if self.next == True:
+            if self.event:
+                self.finish = True
+            else:
+                self.stepping = True
+
 
         if self.finish == True:
             if self.event == "return":
@@ -58,9 +66,6 @@ class Debugger(Debugger):
         if arg:
             try:
                 l_no = int(arg)
-                """for line in source_lines:
-                    lines.append(line_no)
-                    line_no += 1"""
                 if int(arg) < start or int(arg) > end:
                     raise IndexError
                 else:
@@ -129,8 +134,14 @@ class Debugger(Debugger):
                 self.log(z)
             frame += 1
 
+    def next_command(self, arg: str) -> None:
+        """Executes the function without stepping in"""
+
+        self.next = True
+
+
     def finish_command(self, arg: str) -> None:
-        """Execute up to the next line skipping functions if any"""
+        """Executes a function until it returns"""
 
         self.finish = True
 
