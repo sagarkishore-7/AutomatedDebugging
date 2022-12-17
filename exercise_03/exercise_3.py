@@ -50,6 +50,17 @@ class Station:
 class TrainNetwork:
     
     def repOK(self):
+        trainidlist = []
+        not_exists = True
+        for id in self.trains:
+            trainidlist.append(id.train_id)
+        if len(trainidlist) == len(set(trainidlist)):
+            not_exists = False
+            assert not_exists
+
+
+
+
         # TODO: implement the function that verifies whether this train network is in a valid state
         assert True
     

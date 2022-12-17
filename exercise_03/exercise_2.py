@@ -1,52 +1,52 @@
 def assert_equal(a, b):
     # assert that a is equal to b
-    assert True # TODO: add the assertion
+    assert a == b
     
 def assert_not_equal(a, b):
     # assert that a is not equal to b
-    assert True # TODO: add the assertion
+    assert a != b
 
 def assert_true(a):
     # assert that the bool representation of a is True
     # you can get the bool representation by casting a to bool
-    assert True # TODO: add the assertion
-    
+    assert bool(a) == True
+
 def assert_false(a):
     # assert that the bool representation of a is False
-    # you can get the bool representation by casting a to bool.
-    assert True # TODO: add the assertion
+    # you can get the bool representation by casting a to bool
+    assert bool(a) == False
 
 def assert_is(a, b):
     # assert that a is the same object as b
-    assert True # TODO: add the assertion
+    assert a is b
     
 def assert_is_not(a, b):
     # assert that a is not the same object as b
-    assert True # TODO: add the assertion
+    assert a is not b
 
 def assert_is_none(a):
     # assert that a is None
-    assert True # TODO: add the assertion
+    assert a == None
     
 def assert_is_not_none(a):
     # assert that a is not None
-    assert True # TODO: add the assertion
+    assert a != None
 
 def assert_is_in(a, b):
     # assert that a is an element of b
-    assert True # TODO: add the assertion
+    assert a in b
 
 def assert_is_not_in(a, b):
     # assert that a is not an element of b
-    assert True # TODO: add the assertion
+    assert a not in b
     
 def assert_is_instance(a, t):
     # assert that a is of type t
-    assert True # TODO: add the assertion
+    assert isinstance(a,t)
     
 def assert_is_not_instance(a, t):
     # assert that a is not of type t
-    assert True # TODO: add the assertion
+    assert isinstance(a,t) == False
 
     
 ################################ Tests ################################
