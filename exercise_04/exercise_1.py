@@ -85,6 +85,11 @@ def returned(return_val: Any, level: int) -> Any:
 
 class Transformer(NodeTransformer):
 
+    """def __init__(self):
+        self.variables = {}
+        self.input_name = ""
+        self.input_value = 0"""
+
 
     def visit_Call(self, node):
         if isinstance(node.func, ast.Name) and node.func.id == self.ori_name:
@@ -98,6 +103,27 @@ class Transformer(NodeTransformer):
     def visit_FunctionDef(self, node: FunctionDef) -> FunctionDef:
         self.ori_name = node.name
         self.traced_name = node.name + '_traced'
+        #first_arg = node.args.args[0]
+
+        print(f"Arguments in function {node.name}:")
+        for arg in node.args.args:
+            print(f"  {arg.arg}")
+
+
+        """# Reset varaible dict for every new function then traverse the body to reassign it
+        self.variables = {}
+        # Traverse to find assignments
+        self.visit(node.body)
+
+        for name,value in self.variables.items():
+            if value == first_arg.arg:
+                self.input_name = name
+                self.input_value = value
+
+        print(f"Variables in function {node.name}:")
+        for name, value in self.variables.items():
+            print(f"  {name}: {value}")"""
+
 
         # Change the function name
         node.name = self.traced_name
@@ -110,7 +136,7 @@ class Transformer(NodeTransformer):
 
 
         # Add the level argument
-        level_arg = ast.arg(arg="level", annotation=None, default=ast.Num(n=0))
+        level_arg = ast.arg(arg="level:int", annotation=None, default=ast.Num(n=0))
         node.args.args.append(level_arg)
 
 
@@ -131,8 +157,6 @@ class Transformer(NodeTransformer):
                 # Add the level + 1 argument to the recursive call
                 child.value.args.append(
                     ast.BinOp(left=ast.Name(id="level", ctx=ast.Load()), op=ast.Add(), right=ast.Num(n=1)))"""
-
-        ast.fix_missing_locations(node)
         self.generic_visit(node)
         return node
 
@@ -147,6 +171,15 @@ class Transformer(NodeTransformer):
         node.value = return_call
         self.generic_visit(node)
         return node
+
+    """def visit_Assign(self, node):
+        # Store the variables and their values
+        for var in node.targets:
+            if isinstance(var, ast.Name):
+                self.variables[var.id] = node.value
+
+        self.generic_visit(node)
+        return node"""
 
 
 ######## Tests ########
