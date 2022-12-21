@@ -85,6 +85,16 @@ def returned(return_val: Any, level: int) -> Any:
 
 class Transformer(NodeTransformer):
 
+
+    def visit_Call(self, node):
+        if isinstance(node.func, ast.Name) and node.func.id == self.ori_name:
+            # Change the function name in the recursive call
+            node.func.id = self.traced_name
+            # Add the level + 1 argument to the recursive call
+            node.args.append(ast.BinOp(left=ast.Name(id="level", ctx=ast.Load()), op=ast.Add(), right=ast.Num(n=1)))
+        self.generic_visit(node)
+        return node
+
     def visit_FunctionDef(self, node: FunctionDef) -> FunctionDef:
         self.ori_name = node.name
         self.traced_name = node.name + '_traced'
@@ -104,14 +114,14 @@ class Transformer(NodeTransformer):
         node.args.args.append(level_arg)
 
 
-        # Find the return statements in the function body
+        """# Find the return statements in the function body
         for i, child in enumerate(node.body):
             if isinstance(child, ast.Return):
                 # Replace the return value with a function call
                 return_function = ast.Name(id="returned", ctx=ast.Load())
                 return_call = ast.Call(func=return_function, args=[child.value, ast.Name(id="level", ctx=ast.Load())],
                                        keywords=[])
-                child.value = return_call
+                child.value = return_call"""
 
 
 
@@ -123,13 +133,20 @@ class Transformer(NodeTransformer):
                     ast.BinOp(left=ast.Name(id="level", ctx=ast.Load()), op=ast.Add(), right=ast.Num(n=1)))
 
 
+        self.generic_visit(node)
+        return node
 
-    """def visit_Return(self, node):
 
-        returned_function = ast.Name(id="returned", ctx=ast.Load())
-        returned_call = ast.Call(func=returned_function, args=[], keywords=[])
-        node.value = returned_call
-        return node"""
+
+    def visit_Return(self, node):
+
+        # Replace the return value with a function call
+        return_function = ast.Name(id="returned", ctx=ast.Load())
+        return_call = ast.Call(func=return_function, args=[node.value, ast.Name(id="level", ctx=ast.Load())],
+                               keywords=[])
+        node.value = return_call
+        self.generic_visit(node)
+        return node
 
 
 ######## Tests ########
