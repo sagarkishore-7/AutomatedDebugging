@@ -81,8 +81,6 @@ def returned(return_val: Any, level: int) -> Any:
     log('  ' * level + f"return {repr(return_val)}")
     return return_val
 
-
-
 class Transformer(NodeTransformer):
 
     def visit_Call(self, node):
@@ -105,10 +103,10 @@ class Transformer(NodeTransformer):
         level_arg = ast.arg(arg="level: int = 0", annotation=None, default=ast.Num(n=0))
         node.args.args.append(level_arg)
 
+        # Add all the variables, and it's corresponding values to the list
         for i, arg in enumerate(node.args.args):
-            #print(f"  {arg.arg}: {node.args.defaults[i]}")
             variables.append(arg.arg)
-            #values.append(node.args.defaults[i])
+            #values.append(arg.value)
 
         # Add a log function call at the beginning of the function body
         log_function = ast.Name(id="log", ctx=ast.Load())
@@ -117,7 +115,7 @@ class Transformer(NodeTransformer):
                                                                ast.BinOp(left=ast.Str(s=' '), op=ast.Mult(), right=ast.Name(id="level", ctx=ast.Load())),
                                                                 op=ast.Add(),
                                                                right=
-                                                               ast.Str(s=f"call with {variables[0]} ="))], keywords=[])
+                                                               ast.Str(s=f"call with {variables[0]} = "))], keywords=[])
         node.body.insert(0, ast.Expr(value=log_call))
 
         """print(f"Arguments in function {node.name}:")
