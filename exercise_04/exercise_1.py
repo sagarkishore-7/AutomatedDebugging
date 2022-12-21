@@ -88,76 +88,48 @@ class Transformer(NodeTransformer):
     def visit_FunctionDef(self, node: FunctionDef) -> FunctionDef:
         self.ori_name = node.name
         self.traced_name = node.name + '_traced'
-        node.args.args.append(ast.arg(arg="level: int = 0", annotation=None))
 
-        log_call = ast.Expr(value=ast.Call(func=ast.Name(id="log", ctx=ast.Load()),
-                                           args=[ast.Str(s="' ' * level + f'call with n ='{}'".format(node.name))], keywords=[]))
-        node.body.insert(0, log_call)
+        # Change the function name
+        node.name = self.traced_name
 
+        # Add a log function call at the beginning of the function body
+        log_function = ast.Name(id="log", ctx=ast.Load())
+        log_call = ast.Call(func=log_function, args=[
+            ast.BinOp(left=ast.Str(s=' '), op=ast.Mult(), right=ast.Name(id="level", ctx=ast.Load()))], keywords=[])
+        node.body.insert(0, ast.Expr(value=log_call))
+
+
+        # Add the level argument
+        level_arg = ast.arg(arg="level", annotation=None, default=ast.Num(n=0))
+        node.args.args.append(level_arg)
+
+
+        # Find the return statements in the function body
+        for i, child in enumerate(node.body):
+            if isinstance(child, ast.Return):
+                # Replace the return value with a function call
+                return_function = ast.Name(id="returned", ctx=ast.Load())
+                return_call = ast.Call(func=return_function, args=[child.value, ast.Name(id="level", ctx=ast.Load())],
+                                       keywords=[])
+                child.value = return_call
+
+
+
+        # Find the recursive calls in the function body
         for i, child in enumerate(node.body):
             if isinstance(child, ast.Expr) and isinstance(child.value, ast.Call) and child.value.func.id == node.name:
-                # Change the function name and add an additional argument to the recursive call
-                child.value.func.id = "fib_traced"
+                # Add the level + 1 argument to the recursive call
                 child.value.args.append(
                     ast.BinOp(left=ast.Name(id="level", ctx=ast.Load()), op=ast.Add(), right=ast.Num(n=1)))
 
-        """self.traced_args = ast.arg(arg='level: int = 0')
-        node.args.args.append(self.traced_args)
-        variables = {}
-        values = []
 
 
-        # Iterate through the function body and find variable assignments
-        for child in node.body:
-            if isinstance(child, ast.Assign) and isinstance(child.targets[0], ast.Name):
-                # Add the variable to the dictionary
-                variables[child.targets[0].id] = child.value
+    """def visit_Return(self, node):
 
-        # Increment the level before each recursive call
-        for i, child in enumerate(node.body):
-            if isinstance(child, ast.Expr) and isinstance(child.value, ast.Call) and child.value.func.id == node.name:
-                increment = ast.Assign(targets=[ast.Name(id="level", ctx=ast.Store())], value=ast.BinOp(left=ast.Name(id="depth", ctx=ast.Load()), op=ast.Add(), right=ast.Num(n=1)))
-                node.body.insert(i, increment)
-
-        for var,val in variables.items():
-            if val:
-                values.append(val)
-
-        log_stmt = ast.Expr(value=ast.Call(func=ast.Name(id="log", ctx=ast.Load()),
-                                           args=[ast.Str(s="Calculating Fibonacci number for n = "), values[0]],
-                                           keywords=[]))
-
-       """
-        for i, child in enumerate(node.body):
-            if isinstance(child, ast.Return):
-                # Replace the return statement with a function call
-                returned_function = ast.Name(id="returned", ctx=ast.Load())
-                level_arg = ast.Str(s="level")
-                return_call = ast.Call(func=returned_function, args=[child.value, level_arg], keywords=[])
-                node.body[i] = ast.Expr(value=return_call)
-                break
-
-        new_node = FunctionDef(
-            name=self.traced_name,
-            args=node.args,
-            body=node.body,
-            decorator_list=node.decorator_list,
-            returns=node.returns
-        )
-
-        ast.copy_location(new_node, node)
-
-        self.generic_visit(node)
-        return new_node
-
-
-
-    def visit_Return(self, node):
-
-        return_function = ast.Name(id="returned", ctx=ast.Load())
-        level_arg = ast.Str(s="level")
-        return_call = ast.Call(func=return_function, args=[node.value, level_arg], keywords=[])
-        return ast.Expr(value=return_call)
+        returned_function = ast.Name(id="returned", ctx=ast.Load())
+        returned_call = ast.Call(func=returned_function, args=[], keywords=[])
+        node.value = returned_call
+        return node"""
 
 
 ######## Tests ########
