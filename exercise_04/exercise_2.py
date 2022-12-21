@@ -62,19 +62,19 @@ class ReduceSlicer(Slicer):
     def reduce(self, sources: Dict[str, Tuple[str, int]]) -> str:
         result = ''
         # TODO: implement this method
-        sliced = ''
+        essential = ''
         for key, value in sources.items():
-            sliced = value[0]
-            sliced_line: int = value[1]
-        s_set = set()
+            essential = value[0]
+            essential_line: int = value[1]
+        essential_set = set()
         for key, value in self.dependencies().data:
-            s_set.add(value[1])
+            essential_set.add(value[1])
         for key, value in self.dependencies().control:
-            s_set.add(value[1])
-        s_set = [x - sliced_line + 1 for x in s_set]
-        reducer = Reducer(s_set)
-        print(sliced)
-        tree = ast.parse(sliced)
+            essential_set.add(value[1])
+        essential_set = [x - essential_line + 1 for x in essential_set]
+        reducer = Reducer(essential_set)
+        print(essential)
+        tree = ast.parse(essential)
         new_tree = reducer.visit(tree)
         result += ast.unparse(new_tree)
         return result
