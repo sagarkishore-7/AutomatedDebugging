@@ -83,6 +83,9 @@ def returned(return_val: Any, level: int) -> Any:
 
 class Transformer(NodeTransformer):
 
+    def __init__(self):
+        self.variables = []
+
     def visit_Call(self, node):
         if isinstance(node.func, ast.Name) and node.func.id == self.ori_name:
             # Change the function name in the recursive call
@@ -96,8 +99,7 @@ class Transformer(NodeTransformer):
         self.ori_name = node.name
         self.traced_name = node.name + '_traced'
 
-        variables = []
-        values = []
+        self.variables.clear()
 
         # Add the level argument
         level_arg = ast.arg(arg="level: int = 0", annotation=None, default=ast.Num(n=0))
@@ -105,8 +107,10 @@ class Transformer(NodeTransformer):
 
         # Add all the variables, and it's corresponding values to the list
         for i, arg in enumerate(node.args.args):
-            variables.append(arg.arg)
-            #values.append(arg.value)
+            self.variables.append(arg.arg)
+
+        """value = ast.JoinedStr(values=[ast.Str(s=''), ast.FormattedValue(value=ast.Name(id='n', ctx=ast.Load()), conversion=-1, format_spec=None)])
+        value = str(value)"""
 
         # Add a log function call at the beginning of the function body
         log_function = ast.Name(id="log", ctx=ast.Load())
@@ -114,8 +118,13 @@ class Transformer(NodeTransformer):
         log_call = ast.Call(func=log_function, args=[ast.BinOp(left=
                                                                ast.BinOp(left=ast.Str(s=' '), op=ast.Mult(), right=ast.Name(id="level", ctx=ast.Load())),
                                                                 op=ast.Add(),
-                                                               right=
-                                                               ast.Str(s=f"call with {variables[0]} = "))], keywords=[])
+                                                               right=ast.JoinedStr(values=[
+                                                                   ast.Str(s=f'call with {self.variables[0]} = '),
+                                                                   ast.FormattedValue(
+                                                                       value=ast.Name(id=self.variables[0], ctx=ast.Load()),
+                                                                       conversion=-1, format_spec=None)
+                                                               ]))
+                                                     ], keywords=[])
         node.body.insert(0, ast.Expr(value=log_call))
 
         """print(f"Arguments in function {node.name}:")
