@@ -125,14 +125,14 @@ class Transformer(NodeTransformer):
 
 
 
-        # Find the recursive calls in the function body
+        """# Find the recursive calls in the function body
         for i, child in enumerate(node.body):
             if isinstance(child, ast.Expr) and isinstance(child.value, ast.Call) and child.value.func.id == node.name:
                 # Add the level + 1 argument to the recursive call
                 child.value.args.append(
-                    ast.BinOp(left=ast.Name(id="level", ctx=ast.Load()), op=ast.Add(), right=ast.Num(n=1)))
+                    ast.BinOp(left=ast.Name(id="level", ctx=ast.Load()), op=ast.Add(), right=ast.Num(n=1)))"""
 
-
+        ast.fix_missing_locations(node)
         self.generic_visit(node)
         return node
 
