@@ -136,7 +136,7 @@ class Transformer(NodeTransformer):
 
 
         # Add the level argument
-        level_arg = ast.arg(arg="level:int", annotation=None, default=ast.Num(n=0))
+        level_arg = ast.arg(arg="level", annotation=None, default=ast.Num(n=0))
         node.args.args.append(level_arg)
 
 
