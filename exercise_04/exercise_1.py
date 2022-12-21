@@ -103,7 +103,7 @@ class Transformer(NodeTransformer):
 
 
         # Add the level argument
-        level_arg = ast.arg(arg="level", annotation=None, default=ast.Num(n=0))
+        level_arg = ast.arg(arg="level: int = 0", annotation=None, default=ast.Num(n=0))
         node.args.args.append(level_arg)
 
         for i, arg in enumerate(node.args.args):
@@ -118,7 +118,7 @@ class Transformer(NodeTransformer):
                                                                ast.BinOp(left=ast.Str(s=' '), op=ast.Mult(), right=ast.Name(id="level", ctx=ast.Load())),
                                                                 op=ast.Add(),
                                                                right=
-                                                               ast.Str(s='f"call with '+variables[0]+'='))], keywords=[])
+                                                               ast.Str(s=f"call with {variables[0]} ="))], keywords=[])
         node.body.insert(0, ast.Expr(value=log_call))
 
         """print(f"Arguments in function {node.name}:")
