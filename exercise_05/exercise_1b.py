@@ -23,13 +23,15 @@ class PredicateCollector(Collector):
     def collect(self, frame: FrameType, event: str, arg: Any) -> None:
         a = inspect.getargvalues(frame)
         func_name = frame.f_code.co_name
-        op = ''
-
 
         for arg in a.args:
             pred = Predicate(f"{func_name}({arg} == 0)")
             pred.true = 0
             pred.observed = 1
+            if isinstance(a.locals[arg],float) or isinstance(a.locals[arg], int):
+                pass
+            else:
+                break
             if a.locals[arg] == 0:
                 pred.true = 1
                 self.predicates[f"{func_name}({arg} == 0)"]=pred
