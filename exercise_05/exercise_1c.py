@@ -10,12 +10,59 @@ class PredicateDebugger(DifferenceDebugger):
     
     def __init__(self, log: bool = False):
         super().__init__(collector_class=PredicateCollector, log=log)
-    
+
     def all_predicates(self) -> Set[Any]:
         """Return a set of all predicates observed."""
-        # TODO: implement
-        return set()
-    
+        passed_list = []
+        failed_list = []
+        for passed_item in self.collectors.get('PASS'):
+            for key, value in passed_item.predicates.items():
+                if value not in passed_list:
+                    passed_list.append(value)
+                    for v in passed_list:
+                        if v.rpr == value.rpr:
+                            v.successful_observed += 1
+                            v.successful_true += 1
+            else:
+                for v in passed_list:
+                    if v.rpr == value.rpr:
+                        v.successful_observed += 1
+                        v.successful_true += 1
+
+        for failed_item in self.collectors.get('FAIL'):
+            for key, value in failed_item.predicates.items():
+                if value not in failed_list:
+                    failed_list.append(value)
+                    for v in failed_list:
+                        if v.rpr == value.rpr:
+                            v.failing_observed += 1
+                            if value.true == 1:
+                                v.failing_true += 1
+                else:
+                    for v in failed_list:
+                        if v.rpr == value.rpr:
+                            v.failing_observed += 1
+                            if value.true == 1:
+                                v.failing_true += 1
+        complete_set = []
+        for p in passed_list:
+            for f in failed_list:
+                if p.rpr == f.rpr:
+                    complete_set.append(Predicate(p.rpr,
+                                                  p.failing_true + f.failing_true,
+                                                  p.successful_true + f.successful_true,
+                                                  0,
+                                                  p.failing_observed + f.failing_observed,
+                                                  p.successful_observed + f.successful_observed,
+                                                  0))
+
+        for e in complete_set:
+            e.true = e.failing_true + e.successful_true
+            e.observed = e.failing_observed + e.successful_observed
+
+        print(complete_set)
+        return complete_set
+
 
 def test_debugger():
     epsilon = 0.000001

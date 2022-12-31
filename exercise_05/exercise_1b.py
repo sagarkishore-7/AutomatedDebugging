@@ -25,47 +25,67 @@ class PredicateCollector(Collector):
         func_name = frame.f_code.co_name
 
         for arg in a.args:
-            pred = Predicate(f"{func_name}({arg} == 0)")
+            """pred = Predicate(f"{func_name}({arg} == 0)")
             pred.true = 0
-            pred.observed = 1
+            pred.observed = 1"""
             if isinstance(a.locals[arg],float) or isinstance(a.locals[arg], int):
                 pass
             else:
                 break
             if a.locals[arg] == 0:
-                pred.true = 1
-                self.predicates[f"{func_name}({arg} == 0)"]=pred
+                self.predicates.update(
+                    {f"{func_name}({arg} == 0)": Predicate(rpr=f"{func_name}({arg} == 0)", true=1, observed=1)})
             else:
-                self.predicates[f"{func_name}({arg} == 0)"]=pred
+                self.predicates.update(
+                    {f"{func_name}({arg} == 0)": Predicate(rpr=f"{func_name}({arg} == 0)", true=0, observed=1)})
             if a.locals[arg] < 0:
-                pred.true = 1
-                self.predicates[f"{func_name}({arg} < 0)"]=pred
+                self.predicates.update(
+                    {f"{func_name}({arg} < 0)": Predicate(rpr=f"{func_name}({arg} < 0)", true=1, observed=1)})
             else:
-                self.predicates[f"{func_name}({arg} < 0)"]=pred
+                self.predicates.update(
+                    {f"{func_name}({arg} < 0)": Predicate(rpr=f"{func_name}({arg} < 0)", true=0, observed=1)})
             if a.locals[arg] > 0:
-                pred.true = 1
-                self.predicates[f"{func_name}({arg} > 0)"]=pred
+                self.predicates.update(
+                    {f"{func_name}({arg} > 0)": Predicate(rpr=f"{func_name}({arg} > 0)", true=1, observed=1)})
             else:
-                self.predicates[f"{func_name}({arg} > 0)"]=pred
+                self.predicates.update(
+                    {f"{func_name}({arg} > 0)": Predicate(rpr=f"{func_name}({arg} > 0)", true=0, observed=1)})
             for next_arg in a.args:
-                pred.true = 0
                 if next_arg == arg:
                     continue
                 if a.locals[arg] == a.locals[next_arg]:
-                    pred.true = 1
-                    self.predicates[f"{func_name}({arg} == {next_arg})"] = pred
+                    self.predicates.update({f"{func_name}({arg} == {next_arg})": Predicate(
+                        rpr=f"{func_name}({arg} == {next_arg})", true=1, observed=1)})
+                    self.predicates.update({f"{func_name}({next_arg} == {arg})": Predicate(
+                        rpr=f"{func_name}({next_arg} == {arg})", true=1, observed=1)})
                 else:
-                    self.predicates[f"{func_name}({arg} == {next_arg})"] = pred
+                    self.predicates.update({f"{func_name}({arg} == {next_arg})": Predicate(
+                        rpr=f"{func_name}({arg} == {next_arg})", true=0, observed=1)})
+                    self.predicates.update({f"{func_name}({next_arg} == {arg})": Predicate(
+                        rpr=f"{func_name}({next_arg} == {arg})", true=0, observed=1)})
                 if a.locals[arg] < a.locals[next_arg]:
-                    pred.true = 1
-                    self.predicates[f"{func_name}({arg} < {next_arg})"] = pred
+                    self.predicates.update({f"{func_name}({arg} < {next_arg})": Predicate(
+                        rpr=f"{func_name}({arg} < {next_arg})", true=1, observed=1)})
+                    self.predicates.update({f"{func_name}({next_arg} < {arg})": Predicate(
+                        rpr=f"{func_name}({next_arg} < {arg})", true=0, observed=1)})
                 else:
-                    self.predicates[f"{func_name}({arg} < {next_arg})"] = pred
+                    self.predicates.update({f"{func_name}({arg} < {next_arg})": Predicate(
+                        rpr=f"{func_name}({arg} < {next_arg})", true=0, observed=1)})
+                    self.predicates.update({f"{func_name}({next_arg} < {arg})": Predicate(
+                        rpr=f"{func_name}({next_arg} < {arg})", true=1, observed=1)})
                 if a.locals[arg] > a.locals[next_arg]:
-                    pred.true = 1
-                    self.predicates[f"{func_name}({arg} > {next_arg})"] = pred
+                    self.predicates.update({f"{func_name}({arg} > {next_arg})": Predicate(
+                        rpr=f"{func_name}({arg} > {next_arg})", true=1, observed=1)})
+                    self.predicates.update({f"{func_name}({next_arg} > {arg})": Predicate(
+                        rpr=f"{func_name}({next_arg} > {arg})", true=0, observed=1)})
                 else:
-                    self.predicates[f"{func_name}({arg} > {next_arg})"] = pred
+                    self.predicates.update({f"{func_name}({arg} > {next_arg})": Predicate(
+                        rpr=f"{func_name}({arg} > {next_arg})", true=0, observed=1)})
+                    self.predicates.update({f"{func_name}({next_arg} > {arg})": Predicate(
+                        rpr=f"{func_name}({next_arg} > {arg})", true=1, observed=1)})
+        """self.predicates.update({f"{func_name}({arg} == 0)": Predicate(rpr=f"{func_name}({arg} == 0)", true=1, observed=1)})
+
+        self.predicates.update({f"{func_name}({arg} == {next_arg})": Predicate(rpr=f"{func_name}({arg} == 0)", true=1, observed=1)})"""
 
 
 
