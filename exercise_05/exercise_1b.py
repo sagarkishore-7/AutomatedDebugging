@@ -46,15 +46,15 @@ class PredicateCollector(Collector):
         if event != 'call':
             return
         a = inspect.getargvalues(frame)
-        pred_dict = a.locals
-        #print(pred_dict)
+        arg_list = a.locals
+        #print(arg_list)
         func_name = frame.f_code.co_name
 
         """pred = Predicate(f'{func_name}({arg}')
         pred.true = 0
         pred.observed = 1"""
 
-        for arg, value in pred_dict.items():
+        for arg, value in arg_list.items():
             if isinstance(value, int) or isinstance(value, float):
                 pred = Predicate(f'{func_name}({arg} == 0)', 0, 0, equal(value, 0), 0, 0, 1)
                 self.predicates[pred.rpr] = pred
@@ -65,7 +65,7 @@ class PredicateCollector(Collector):
                 pred = Predicate(f'{func_name}({arg} < 0)', 0, 0, lesser(value, 0), 0, 0, 1)
                 self.predicates[pred.rpr] = pred
 
-                for next_arg, next_value in pred_dict.items():
+                for next_arg, next_value in arg_list.items():
                     if arg != next_arg:
                         pred = Predicate(f'{func_name}({arg} == {next_arg})', 0, 0, equal(value, next_value), 0, 0, 1)
                         self.predicates[pred.rpr] = pred
