@@ -1,5 +1,6 @@
 from debuggingbook.DynamicInvariants import TypeAnnotator
 
+
 def mystery(x, y):
     if len(y) > 0:
         return x * y
@@ -13,8 +14,9 @@ def test_mystery():
     
 
 def run() -> TypeAnnotator:
-    # TODO
-    pass
+    with TypeAnnotator() as ann:
+        test_mystery()
+    return ann
 
 
 if __name__ == '__main__':
