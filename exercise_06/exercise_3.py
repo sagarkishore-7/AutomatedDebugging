@@ -168,7 +168,20 @@ class ForwardTypeChecker(ast.NodeVisitor):
         # TODO: find the type of the assigned expression and the type of 
         # the target (hint: node.annotation) and check if they match
 
-        target_type = None
+        exp_type = self.visit(node.value)
+        type_holder = ast.unparse(node.annotation)
+
+        if type_holder == 'int':
+            target_type = Int()
+        elif type_holder == 'str':
+            target_type = Str()
+        else:
+            target_type = Anything()
+
+        if exp_type != target_type:
+            raise TypeError
+
+        """target_type = None
         if node.annotation == 'int':
             target_type = Int()
         elif node.annotation == 'str':
@@ -180,7 +193,7 @@ class ForwardTypeChecker(ast.NodeVisitor):
         if target_type != value_type:
             raise TypeError(f'Type mismatch: expected {target_type}, got {value_type}')
         if isinstance(node.target, ast.Name):
-            self.scope.put(node.target.id, value_type)
+            self.scope.put(node.target.id, value_type)"""
         
         return None
     
@@ -245,14 +258,17 @@ class ForwardTypeChecker(ast.NodeVisitor):
             elif isinstance(left, Str) and isinstance(right, Anything):
                 return Str()
             elif isinstance(left, Anything) and isinstance(right, Anything):
+                print(left, right)
                 return Anything()
-            elif (isinstance(left, Str) and isinstance(right, Int)) or (isinstance(right, Str) and isinstance(left, Int)):
+            elif (isinstance(left, Str) and isinstance(right, Int)) or (
+                    isinstance(right, Str) and isinstance(left, Int)):
                 raise TypeError
         elif isinstance(node.op, ast.Mult):
             if isinstance(left, Int) and isinstance(right, Int):
                 return Int()
             elif isinstance(left, Anything) and isinstance(right, Int):
                 return Int()
+
             elif isinstance(left, Anything) and isinstance(right, Anything):
                 return Str()
             elif type(left) == 'int' and isinstance(right, Anything):
@@ -261,12 +277,11 @@ class ForwardTypeChecker(ast.NodeVisitor):
                 return Str()
             elif isinstance(left, Anything) and isinstance(right, Anything):
                 return Anything()
-            elif (isinstance(left, Str) and isinstance(right, Int)) or (isinstance(right, Str) and isinstance(left, Int)):
+            elif (isinstance(left, Str) and isinstance(right, Int)) or (
+                    isinstance(right, Str) and isinstance(left, Int)):
                 return Str()
             elif isinstance(left, Str) and isinstance(right, Str) == 'str':
                 raise TypeError
-        
-        pass
         
     def visit_Call(self, node: ast.Call) -> Optional[Type]:
         assert isinstance(node.func, ast.Name), \
@@ -287,14 +302,14 @@ class ForwardTypeChecker(ast.NodeVisitor):
                 arg_type = self.visit_Constant(arg)
             if expected_arg == type(arg_type):
                 if isinstance(arg_type, Int):
-                    return_type = Int()
+                    pass
                 elif isinstance(arg_type, Str):
-                    return_type = Str()
+                    pass
                 else:
-                    return_type = Anything()
+                    pass
             else:
                 raise TypeError
-        
+
         return return_type
     
     def visit_Constant(self, node: ast.Constant) -> Optional[Type]:
