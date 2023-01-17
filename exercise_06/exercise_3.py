@@ -150,13 +150,10 @@ class ForwardTypeChecker(ast.NodeVisitor):
         # TODO: find the type of the assigned expression and update the 
         # target's (target.id) type in self.scope
 
-        if isinstance(target, ast.Name):
-            expr_type = self.visit_Name(target)
-        elif isinstance(target, ast.Constant):
-            expr_type = self.visit_Constant(target)
-        elif isinstance(target, ast.Call):
-            expr_type = self.visit_Call(target)
-        self.scope.update(target.id, expr_type)
+        value_type = self.visit(node.value)
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                self.scope.update(target.id, value_type)
 
         return None
     
@@ -171,20 +168,19 @@ class ForwardTypeChecker(ast.NodeVisitor):
         # TODO: find the type of the assigned expression and the type of 
         # the target (hint: node.annotation) and check if they match
 
-        target_type = ast.unparse(node.annotation)
-        value_type = self.visit(node.value)
-
-        if target_type == 'int':
-            expr_type = Int()
-        elif target_type == 'str':
-            expr_type = Str()
+        target_type = None
+        if node.annotation == 'int':
+            target_type = Int()
+        elif node.annotation == 'str':
+            target_type = Str()
         else:
-            expr_type = Anything()
+            target_type = Anything()
 
-        if value_type != expr_type:
-            raise TypeError
-
-        self.scope.update(node.target.id, expr_type)
+        value_type = self.visit(node.value)
+        if target_type != value_type:
+            raise TypeError(f'Type mismatch: expected {target_type}, got {value_type}')
+        if isinstance(node.target, ast.Name):
+            self.scope.put(node.target.id, value_type)
         
         return None
     
@@ -199,16 +195,10 @@ class ForwardTypeChecker(ast.NodeVisitor):
         # TODO: get the type of the return value and compare it to the 
         # current_return type
 
-        returntype = self.visit(node.value)
+        returnee = self.visit(node.value)
 
-        if isinstance(returntype, Int) and (isinstance(self.current_return, Int) or isinstance(self.current_return, Anything)):
-            pass
-        elif isinstance(returntype, Str) and (isinstance(self.current_return, Str) or isinstance(self.current_return, Anything)):
-            pass
-        elif isinstance(returntype, Anything) and isinstance(self.current_return, Anything):
-            pass
-        else:
-            raise TypeError
+        if returnee != self.current_return:
+            raise TypeError(f'Type mismatch: expected {self.current_return}, got {returnee}')
             
         return None
     
@@ -217,15 +207,10 @@ class ForwardTypeChecker(ast.NodeVisitor):
         # if it does not exist
         # Return the type of the expression
 
-        if not self.scope.types.get(node.id):
-            raise TypeError
-        else:
-            if self.scope.types.get(node.id).__repr__() == 'Int':
-                return Int()
-            elif self.scope.types.get(node.id).__repr__() == 'Str':
-                return Str()
-            else:
-                return Anything()
+        name_type = self.scope.get(node.id)
+        if name_type is None:
+            raise TypeError(f'Unknown variable {node.id}')
+        return name_type
         
         pass
     
@@ -322,8 +307,6 @@ class ForwardTypeChecker(ast.NodeVisitor):
             return Str()
         else:
             return Anything()
-        pass
-    
 
 ############## TESTS ##############
 
