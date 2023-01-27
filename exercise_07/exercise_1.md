@@ -1,5 +1,6 @@
-## Main Function:
+# Main Script:
 ```sh
+import random
 import string
 
 from debuggingbook.DDSetDebugger import DDSetDebugger
@@ -9,14 +10,17 @@ from fuzzingbook.Grammars import Grammar
 
 data = 'password:hjasdiebk456jhaccount:smytzek'
 
+
 def store_data(payload: str):
     global data
     data = payload + data
 
+
 def get_data(length: int) -> str:
     return data[:length]
-    
-def heartbeat(length: int , payload: str) -> str:
+
+
+def heartbeat(length: int, payload: str) -> str:
     assert length == len(payload)
     store_data(payload)
     assert data.startswith(payload)
@@ -24,82 +28,81 @@ def heartbeat(length: int , payload: str) -> str:
     assert r == payload
     return r
 ```
-## 1. Heartbeat Payload Grammer:
+# 1. Heartbeat Payload Grammar:
 ```sh
 HEARTBEAT_GRAMMAR: Grammar = {
-    "<start>":
-        ["<plain-text>"],
-
-    "<plain-text>":
-        ["", "<plain-char><plain-text>"],
-    "<plain-char>":
-        ["<letter>", "<digit>", "<other>", "<whitespace>"],
-
-    "<letter>": list(string.ascii_letters),
-    "<digit>": list(string.digits),
-    "<other>": list(string.punctuation.replace('<', '').replace('>', '')),
-    "<whitespace>": list(string.whitespace)
+    "<start>": ["<strings>"],
+    "<strings>": ["<string>", "<string><strings>"],
+    "<string>": ["<letters>", "<digits>", "<special_chars>"],
+    "<letters>": ["<letter>", "<letter><letters>"],
+    "<letter>": [string.ascii_letters],
+    "<digits>": ["<digit><digits>", "<digit>"],
+    "<digit>": [string.digits],
+    "<special_chars>": ["<special_char>", "<special_char><special_chars>"],
+    "<special_char>": ["!", """, "#",  ",", "-", ".", "/", ":", ";", "=", "?", "@", "[","$", "%", "&", """, "(", ")",
+                       "*", "+", "\\", "]", "^", "_", "`", "{", "|", "}", "~"]
 }
 ```
-## 2.  Grammer Fuzzer Code:
+# 2.  Grammar Fuzzer Code:
 ```sh
-heartbeat_fuzzer = GrammarFuzzer(HEARTBEAT_GRAMMAR)
+fuzzer = GrammarFuzzer(HEARTBEAT_GRAMMAR)
+random.random()
+while True:
+    fuzzed_input = fuzzer.fuzz()
+    try:
+        heartbeat(5, fuzzed_input)
+    except AssertionError:
+        break
 
-for i in range(100):
-    fuzz_heartbeat = heartbeat_fuzzer.fuzz()
-    heartbeat(5, fuzz_heartbeat)
+failing_input = fuzzed_input
 ```
-## 3. Delta Debugger Code:
+# 3. Delta Debugger Code:
 ```sh
-with DeltaDebugger(log=False) as dd:
-    heartbeat(5, fuzz_heartbeat)
+with DeltaDebugger() as dd:
+    heartbeat(5, failing_input)
 print(dd)
 ```
 
-## Output:
+# Output:
 ```sh
 heartbeat(length=5, payload='')
 ```
-The output does not explain the minimum failure input very well, the white space does in fact cause the program to fail however, the reason the program is failing is the payload - length mismatch which is not shown in the output.
-## 4. DDSet Debugger
+Although the white space does in fact cause the program to fail, the payload - length mismatch, which is not reflected in the output, is the real cause of the program's failure. The output does not adequately explain the minimal failure input.# 4. DDSet Debugger
 ```sh
-fuzz_heartbeat = heartbeat_fuzzer.fuzz()
-with DDSetDebugger(HEARTBEAT_GRAMMAR, log=False) as dd:
-    heartbeat(5, fuzz_heartbeat)
-print(dd)
+with DDSetDebugger(HEARTBEAT_GRAMMAR) as ddset:
+    heartbeat(5, failing_input)
+print(ddset)
 ```
-## Output:
+# Output:
 ```sh
 heartbeat(length=5, payload='<start>')
 ```
 
-## 4.1
-The output pattern is incorrect, saying that the pattern is <start> just implies that any input results in a faliure while ignoring the elephant in the room (the input lenght).
-
-## 4.2 Fuzz_args and succes rate code:
+# 4.1
+The output pattern is erroneous; asserting that the pattern is <start> just indicates that any input will lead to failure while omitting the obvious problem (the input length).
+# 4.2 Fuzz_args and success rate code:
 ```sh
-fail=0
+fail = 0
 
 for i in range(10000):
-    fuzz_args = dd.fuzz_args()
+    fuzz_args = ddset.fuzz_args()
     payload = fuzz_args.get("payload")
     try:
         heartbeat(5, payload)
     except AssertionError:
         fail += 1
 print(fail)
-print((1 - fail/10000) * 100)
+print((1 - (fail / 10000)) * 100)
 ```
-## Output:
+# Output:
 ```sh
-9846
-1.539999999999997
+9910
+0.9000000000000008
 ```
-The sucess rate is 1.54% which is very low due to the randomness of the input only 1.54% out of 10000 attempts results in an input of lenght 5.
+The sucess rate is 90% which is high due to the randomness of the input length of 5 which is 9910/10000
 
-## 4.3 
-A potential improvement is to take into account the length parameter in the grammar and correlate the failure causes of both Length and Payload parameters with broader test sample size.
-
+# 4.3 
+A potential enhancement is to incorporate the length parameter into the grammar and to link a larger test sample size to the failure factors for both the length and payload parameters.
 
 
 
