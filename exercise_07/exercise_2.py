@@ -1,10 +1,25 @@
 import ast
-from typing import List
+from typing import List, cast
 
-def compile_and_test_ast(tree: ast.Module, keep_list: List[ast.AST], 
+
+def compile_and_test_ast(tree: ast.Module, keep_list: List[ast.AST],
                          test_tree: ast.FunctionDef) -> None:
-    pass # YOUR CODE HERE
 
+    new_node = cast(ast.Module, copy_and_reduce(tree, keep_list))
+
+    if test_tree is not None:
+        new_node.body += test_tree.body
+
+    try:
+        code_obj = compile(new_node, '<string>', 'exec')
+    except Exception:
+        raise SyntaxError("Compilation Error")
+    try:
+        exec(code_obj, {}, {})
+    except AssertionError:
+        pass
+    else:
+        raise Exception
 
 ## TEST ##
 
