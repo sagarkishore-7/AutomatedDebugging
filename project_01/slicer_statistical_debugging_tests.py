@@ -107,17 +107,17 @@ class DebuggerTests(BaseTests):
         os.chdir(Path('tmp'))
         debugger = self.get_debugger(coverage=coverage)
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_middle.MiddleTests.test_335'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_middle.MiddleTests.test_335'])
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_middle.MiddleTests.test_123'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_middle.MiddleTests.test_123'])
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_middle.MiddleTests.test_321'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_middle.MiddleTests.test_321'])
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_middle.MiddleTests.test_555'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_middle.MiddleTests.test_555'])
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_middle.MiddleTests.test_534'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_middle.MiddleTests.test_534'])
         with debugger.collect_fail(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_middle.MiddleTests.test_213'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_middle.MiddleTests.test_213'])
 
         return debugger
 
@@ -127,13 +127,13 @@ class DebuggerTests(BaseTests):
         os.chdir(Path('tmp'))
         debugger = self.get_debugger(coverage=coverage)
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_remove_html_markup.RemoveHTMLMarkupTests.test_abc'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_remove_html_markup.RemoveHTMLMarkupTests.test_abc'])
         with debugger.collect_pass(Path('dump')):
             subprocess.run(
-                ['python3.10', '-m', 'unittest', 'test_remove_html_markup.RemoveHTMLMarkupTests.test_b_abc_b'])
+                ['python3.11', '-m', 'unittest', 'test_remove_html_markup.RemoveHTMLMarkupTests.test_b_abc_b'])
         with debugger.collect_fail(Path('dump')):
             subprocess.run(
-                ['python3.10', '-m', 'unittest', 'test_remove_html_markup.RemoveHTMLMarkupTests.test_quoted_abc'])
+                ['python3.11', '-m', 'unittest', 'test_remove_html_markup.RemoveHTMLMarkupTests.test_quoted_abc'])
 
         return debugger
 
@@ -143,11 +143,11 @@ class DebuggerTests(BaseTests):
         os.chdir(Path('tmp'))
         debugger = self.get_debugger(coverage=coverage)
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_sqrt.SqrtTests.test_9'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_sqrt.SqrtTests.test_9'])
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_sqrt.SqrtTests.test_2'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_sqrt.SqrtTests.test_2'])
         with debugger.collect_fail(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_sqrt.SqrtTests.test_neg_4'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_sqrt.SqrtTests.test_neg_4'])
 
         return debugger
 
@@ -157,11 +157,11 @@ class DebuggerTests(BaseTests):
         os.chdir(Path('tmp'))
         debugger = self.get_debugger(coverage=coverage)
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_bf.BFTests.test_increase_ptr'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_bf.BFTests.test_increase_ptr'])
         with debugger.collect_pass(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_bf.BFTests.test_increase_value'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_bf.BFTests.test_increase_value'])
         with debugger.collect_fail(Path('dump')):
-            subprocess.run(['python3.10', '-m', 'unittest', 'test_bf.BFTests.test_decrease_value'])
+            subprocess.run(['python3.11', '-m', 'unittest', 'test_bf.BFTests.test_decrease_value'])
 
         return debugger
 
