@@ -5,21 +5,26 @@ from debuggingbook.PerformanceDebugger import HitCollector, PerformanceDebugger
 class HitCollector(HitCollector):
     def __init__(self, limit: int = 100000) -> None:
         super().__init__()
-        pass # YOUR CODE HERE
+        self.counter = limit
 
     def collect(self, frame: FrameType, event: str, arg: Any) -> None:
-        pass # YOUR CODE HERE
+        if self.counter > 0:
+            super().collect(frame, event, arg)
+            self.counter -= 1
+        else:
+            raise OverflowError
 
-    pass # OTHER CODE if necessary
 
 class PerformanceDebugger(PerformanceDebugger):
     def is_overflow(self) -> bool:
-        pass # YOUR CODE HERE
+        return self.collector.counter == 0
 
     def __exit__(self, exc_tp: Type, exc_value: BaseException, exc_traceback: TracebackType) -> Optional[bool]:
-        pass # YOUR CODE HERE
-
-    pass # OTHER CODE if necessary
+        outcome = self.PASS if exc_tp is None else self.FAIL if exc_tp == OverflowError else None
+        if outcome is not None:
+            self.add_collector(outcome, self.collector)
+            return True
+        return super().__exit__(exc_tp, exc_value, exc_traceback)
 
 
 if __name__ == '__main__':
