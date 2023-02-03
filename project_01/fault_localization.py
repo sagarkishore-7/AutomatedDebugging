@@ -37,7 +37,7 @@ class Instrumenter(NodeTransformer):
             shutil.rmtree(dest_directory)
         os.makedirs(dest_directory)
 
-        shutil.copy('lib.py', dest_directory / 'lib.py')
+        shutil.copy('lib_fl.py', dest_directory / 'lib_fl.py')
 
         for directory, sub_directories, files in os.walk(source_directory):
             # Iterates directory and its subdirectories in the form of (directory, [sub_directories], [files])
@@ -54,7 +54,7 @@ class Instrumenter(NodeTransformer):
                             """Parse the code into AST"""
                             file_tree = ast.parse(file_contents)
                             """Create a new AST node for the import and add it to the top of the body"""
-                            new_node = ast.ImportFrom(module='lib_fl', names=[ast.alias(name='data', asname=None)], level=0)
+                            new_node = ast.ImportFrom(module='lib_fl', names=[ast.alias(name='_data', asname=None)], level=0)
                             file_tree.body.insert(0, new_node)
                             """Modification to the code using visit method"""
                             TrackCallTransformer().visit(file_tree)
@@ -75,6 +75,7 @@ class Instrumenter(NodeTransformer):
                     destination_directory = Path(dest_directory, Path(directory, file).relative_to(source_directory))
                     os.makedirs(destination_directory.parent, exist_ok=True)
                     shutil.copy(Path(directory, file), destination_directory)
+
 
 class EventCollector(Collector):
 
@@ -108,18 +109,18 @@ class EventCollector(Collector):
         name_and_line = list()
         deps = set(self.deps)
         for dep in deps:
-            self.flatten_tuples(list(dep))
+            self.flattening(list(dep))
         return set(self.unique_set)
 
-    def flatten_tuples(self, tup: list):
-        flat_list: set = set()
-        for x in tup:
+    def flattening(self, tup: list):
+        flattened_list = set()
+        for i, x in enumerate(tup):
             if type(x) == tuple:
-                self.flatten_tuples(x)
-            elif type(x) == str and type(tup[tup.index(x) + 1]) == int:
-                new_tuple = (x, tup[tup.index(x) + 1])
+                self.flattening(x)
+            elif type(x) == str and i < len(tup) - 1 and type(tup[i + 1]) == int:
+                new_tuple = (x, tup[i + 1])
                 if new_tuple not in self.unique_set:
-                    flat_list.add(new_tuple)
+                    flattened_list.add(new_tuple)
                     self.unique_set.add(new_tuple)
 
 class FaultLocalization(ContinuousSpectrumDebugger, RankingDebugger):
@@ -130,9 +131,9 @@ class FaultLocalization(ContinuousSpectrumDebugger, RankingDebugger):
 
     def rank(self) -> List[tuple[str, int]]:
         def susp(event: Any) -> float:
-            suspiciousness = self.suspiciousness(event)
-            assert suspiciousness is not None
-            return suspiciousness
+            suspicious = self.suspiciousness(event)
+            assert suspicious is not None
+            return suspicious
 
         events = list(self.all_events())
         events.sort(key=susp, reverse=True)
@@ -140,35 +141,20 @@ class FaultLocalization(ContinuousSpectrumDebugger, RankingDebugger):
         return events
 
     def mapping(self, events: List):
+        new_to_old = {
+            "middle": {2: 1, 6: 2, 8: 3, 10: 4, 13: 5, 15: 6, 16: 7, 18: 8, 20: 9, 23: 10, 25: 11, 26: 12},
+            "remove_html_markup": {2: 1, 4: 2, 5: 3, 6: 4, 7: 6, 8: 7, 10: 8, 13: 9, 15: 10, 18: 11, 20: 12,
+                                   23: 13, 25: 14, 26: 16},
+            "sqrt": {2: 1, 4: 2, 5: 3, 6: 4, 8: 5, 9: 6, 10: 8},
+            "interpreter": {2: 1, 3: 2, 5: 5, 8: 6, 9: 7, 10: 8, 11: 9, 12: 10, 13: 11, 15: 12,
+                            17: 13, 18: 14, 21: 15, 23: 16, 24: 17, 27: 18, 29: 19, 30: 20,
+                            33: 21, 35: 22, 36: 23, 39: 24, 41: 25, 42: 26, 45: 27, 47: 28,
+                            48: 29, 49: 30, 51: 31, 52: 32},
+            "parser": {2: 1, 3: 2, 5: 5, 7: 6, 8: 7, 9: 8, 11: 9, 14: 10, 16: 11, 19: 12,
+                       21: 13, 24: 14, 26: 15, 29: 16, 31: 17, 34: 18, 36: 19, 37: 20, 39: 21, 40: 22}
+        }
+        return [(e[0], new_to_old[e[0]].get(e[1])) for e in events]
 
-        new_to_old_middle = {2: 1, 6: 2, 8: 3, 10: 4, 13: 5, 15: 6, 16: 7, 18: 8, 20: 9, 23: 10, 25: 11, 26: 12}
-        new_to_old_remove_html_markup = {2: 1, 4: 2, 5: 3, 6: 4, 7: 6, 8: 7, 10: 8, 13: 9, 15: 10, 18: 11, 20: 12,
-                                         23: 13, 25: 14, 26: 16}
-        new_to_old_sqrt = {2: 1, 4: 2, 5: 3, 6: 4, 8: 5, 9: 6, 10: 8}
-        new_to_old_interpreter = {2: 1, 3: 2, 5: 5, 8: 6, 9: 7, 10: 8, 11: 9, 12: 10, 13: 11, 15: 12,
-                                         17: 13, 18: 14, 21: 15, 23: 16, 24: 17, 27: 18, 29: 19, 30: 20,
-                                         33: 21, 35: 22, 36: 23, 39: 24, 41: 25, 42: 26, 45: 27, 47: 28,
-                                         48: 29, 49: 30, 51: 31, 52: 32}
-        new_to_old_parser = {2: 1, 3: 2, 5: 5, 7: 6, 8: 7, 9: 8, 11: 9, 14: 10, 16: 11, 19: 12,
-                                         21: 13, 24: 14, 26: 15, 29: 16, 31: 17, 34: 18, 36: 19, 37: 20, 39: 21, 40: 22}
-        new_events = []
-        for e in events:
-            # Convert tuple to list
-            new_event_list = list(e)
-            new_events.append(new_event_list)
-        for e in new_events:
-            if e[0] == 'middle':
-                e[1] = new_to_old_middle.get(e[1])
-            if e[0] == 'remove_html_markup':
-                e[1] = new_to_old_remove_html_markup.get(e[1])
-            if e[0] == 'sqrt':
-                e[1] = new_to_old_sqrt.get(e[1])
-            if e[0] == 'interpreter':
-                e[1] = new_to_old_interpreter.get(e[1])
-            if e[0] == 'parser':
-                e[1] = new_to_old_parser.get(e[1])
-        final_events = list()
-        for e in new_events:
-            updated_tuple = tuple(e)
-            final_events.append(updated_tuple)
-        return final_events
+
+
+
