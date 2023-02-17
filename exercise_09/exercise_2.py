@@ -1,15 +1,48 @@
 import ast
 import copy
 import random
+import re
 from typing import Any, Callable, List, Set, Tuple, cast
 from debuggingbook.StatisticalDebugger import OchiaiDebugger
-from debuggingbook.Repairer import StatementMutator, Repairer
+from debuggingbook.Repairer import StatementMutator, Repairer, ConditionVisitor
+
 
 def comparator_mutation_candidates(node: ast.Compare) -> Set[ast.Compare]:
-    pass
+    nodes_set = set()
+    op_map = {
+        ast.LtE: [ast.Lt(), ast.GtE()],
+        ast.Lt: [ast.LtE(), ast.Gt()],
+        ast.GtE: [ast.Gt(), ast.LtE()],
+        ast.Gt: [ast.GtE(), ast.Lt()],
+    }
+    op = node.ops[0]
+    if isinstance(op, tuple(op_map.keys())):
+        for new_op in op_map[type(op)]:
+            compare_node = ast.Compare(left=node.left, ops=[new_op], comparators=node.comparators)
+            nodes_set.add(compare_node)
+    return nodes_set
+
 
 def collect_atomic_conditions(tree: ast.AST) -> List[ast.expr]:
-    pass
+    if not isinstance(tree, list):
+        assert isinstance(tree, ast.AST)
+        trees = [tree]
+    else:
+        trees = tree
+
+    conditions = []
+    visitor = ConditionVisitor()
+    for t in trees:
+        visitor.visit(t)
+        conditions.extend(visitor.conditions)
+
+    atomic_conditions = set()
+    for condition in conditions:
+        # Replace parentheses with commas to split into individual atomic conditions
+        atomic_conditions.update(re.findall(r'\w+ *[=!><]+ *[-\w]+', ast.unparse(condition)))
+
+    return [ast.parse(cond) for cond in atomic_conditions]
+
 
 class ConditionGenerator:
     """Generate conditions built from the atomic conditions in an AST"""
