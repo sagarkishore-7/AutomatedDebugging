@@ -3,7 +3,7 @@ import copy
 import itertools
 from types import CodeType
 from typing import Any, Dict, List, Tuple
-from repair.tester import *
+from project_02.repair.tester import *
 
 class Template:
     """Condition template."""
@@ -108,14 +108,44 @@ class Synthesizer:
 
     def flip(self, values: List[bool]) -> List[bool]:
         """Flip the last `False` to `True`, and drop all the `True`s after the last `False`."""
-        # TODO: YOUR CODE HERE
-        pass
+        if not values:
+            return []
+
+        for i in range(len(values) - 1, -1, -1):
+            if not values[i]:
+                return values[:i] + [True]
+
+        return []
 
     def solve(self, constraints: Record) -> bool:
         """Solve constraints. Returns if a solution is found. Set `self.condition` when found."""
-        # TODO: YOUR CODE HERE
-        pass
-        
+        # Enumerate candidate conditions of form x == v and x != v for all items x: v seen in the environments of constraints.
+        candidates = set()
+        for env in constraints.envs:
+            for var, value in env.items():
+                if isinstance(value, str):
+                    value = f"'{value}'"
+                candidates.add(ast.parse(f"{var} == {value}").body[0].value)
+                candidates.add(ast.parse(f"{var} != {value}").body[0].value)
+
+        # Check if each candidate condition is satisfiable.
+        for cond in candidates:
+            if self.sat(cond, constraints):
+                self.condition = cond
+                return True
+
+        # candidate enumeration phase 2
+        if self.extra_templates is not None:
+            env_types = {x: type(v) for env in constraints.envs for x, v in env.items()}
+            for tpl in self.extra_templates:
+                template_vars = [[x for x, t in env_types.items() if t.__name__ == temp] for temp in tpl.types]
+                for t in itertools.product(*template_vars):
+                    inst = tpl.instantiate(t)
+                    if self.sat(inst, constraints):
+                        self.condition = inst
+                        return True
+        return False
+
     def sat(self, cond: ast.expr, constraints: Record) -> bool:
         """Check if `cond` satisfies the `constraints`."""
         for env, value in zip(constraints.envs, constraints.values):

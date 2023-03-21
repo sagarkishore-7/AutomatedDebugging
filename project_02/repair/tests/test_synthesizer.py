@@ -2,9 +2,9 @@ import ast
 from textwrap import dedent
 from typing import List
 import unittest
-from repair.tester import Record
-from repair.synthesizer import *
-from repair.benchmarks.utils import get_positive_tests, get_negative_tests
+from project_02.repair.tester import Record
+from project_02.repair.synthesizer import *
+from project_02.repair.benchmarks.utils import get_positive_tests, get_negative_tests
 
 class TestFlip(unittest.TestCase):
     def flip_into(self, old: List[bool], new: List[bool]):
@@ -160,7 +160,7 @@ class TestSynthesizerCharIndex(TestSynthesizer, unittest.TestCase):
             return None
     """
 
-    from repair.benchmarks import char_index_tests
+    from project_02.repair.benchmarks import char_index_tests
     pos_tests = get_positive_tests(char_index_tests)
     neg_tests = get_negative_tests(char_index_tests)
 
@@ -175,7 +175,7 @@ class TestSynthesizerListSum(TestSynthesizer, unittest.TestCase):
             return total
     """
 
-    from repair.benchmarks import list_sum_tests
+    from project_02.repair.benchmarks import list_sum_tests
     pos_tests = get_positive_tests(list_sum_tests)
     neg_tests = get_negative_tests(list_sum_tests)
 
@@ -196,6 +196,6 @@ class TestSynthesizerScanIntegers(TestSynthesizer, unittest.TestCase):
             return scanned
     """
 
-    from repair.benchmarks import scan_integers_tests
+    from project_02.repair.benchmarks import scan_integers_tests
     pos_tests = get_positive_tests(scan_integers_tests)
     neg_tests = get_negative_tests(scan_integers_tests)
