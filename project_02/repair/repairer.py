@@ -2,9 +2,9 @@ import ast
 from types import CodeType
 from typing import List
 
-from repair.mutator import Mutator
-from repair.synthesizer import Synthesizer, Template
-from repair.tester import run_tests
+from project_02.repair.mutator import Mutator
+from project_02.repair.synthesizer import Synthesizer, Template
+from project_02.repair.tester import run_tests
 
 class Repairer:
     def __init__(self, tree: ast.Module, line_no: int,

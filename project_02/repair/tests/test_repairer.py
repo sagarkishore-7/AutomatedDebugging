@@ -1,8 +1,8 @@
 import ast
 import inspect
 import unittest
-from repair.benchmarks.utils import get_positive_tests, get_negative_tests
-from repair.repairer import Repairer
+from project_02.repair.benchmarks.utils import get_positive_tests, get_negative_tests
+from project_02.repair.repairer import Repairer
 
 class TestRepairer(unittest.TestCase):
     def repair(self, input_module, line_no: int, test_module):
@@ -22,17 +22,17 @@ class TestRepairer(unittest.TestCase):
         self.assertTrue(passed, f'test cases {failures} failed')
 
     def test_repair_char_index(self):
-        from repair.benchmarks import char_index, char_index_tests
+        from project_02.repair.benchmarks import char_index, char_index_tests
         self.repair(char_index, 9, char_index_tests)
 
     def test_repair_list_sum(self):
-        from repair.benchmarks import list_sum, list_sum_tests
+        from project_02.repair.benchmarks import list_sum, list_sum_tests
         self.repair(list_sum, 4, list_sum_tests)
 
     def test_repair_scan_integers(self):
-        from repair.benchmarks import scan_integers, scan_integers_tests
+        from project_02.repair.benchmarks import scan_integers, scan_integers_tests
         self.repair(scan_integers, 12, scan_integers_tests)
 
     def test_repair_scan_integers_alter(self):
-        from repair.benchmarks import scan_integers, scan_integers_tests
+        from project_02.repair.benchmarks import scan_integers, scan_integers_tests
         self.repair(scan_integers, 7, scan_integers_tests)
