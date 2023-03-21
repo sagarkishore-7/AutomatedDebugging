@@ -1,6 +1,6 @@
 import ast
 import unittest
-from repair.synthesizer import Template
+from project_02.repair.synthesizer import Template
 
 class TestTemplate(unittest.TestCase):
     """These tests are not graded. They are used to test the template parser and instantiation."""
