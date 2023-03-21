@@ -180,13 +180,11 @@ class Break(MutationOperator):
     def visit_For(self, node):
         return self.visit_loop(node)
 
-    def get_target_index(self, node) -> int:
+    def get_target_index(self, node) -> int | None:
         for index, stmt in enumerate(node.body):
             if hasattr(stmt, '__target__'):
                 return index
         return None
-
-
 
 
 class Mutator:
