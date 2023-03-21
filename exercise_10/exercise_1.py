@@ -54,7 +54,7 @@ answer_4 = [
 
 answer_5 = {
     "Project": "middle",
-    "Subject": "Type check not implemented for inputs",
+    "Subject": "Type check not implemented for function inputs",
     "Description": """
     Calling the middle function with strings as the parameters returns the middle value of the three strings
 """,
